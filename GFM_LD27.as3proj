@@ -25,7 +25,7 @@
     <option benchmark="False" />
     <option es="False" />
     <option locale="" />
-    <option loadConfig="" />
+    <option loadConfig="src/config.xml" />
     <option optimize="True" />
     <option omitTraces="True" />
     <option showActionScriptWarnings="True" />

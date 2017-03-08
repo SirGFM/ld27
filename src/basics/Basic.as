@@ -1,6 +1,7 @@
 package basics {
 	
 	import org.flixel.FlxG;
+	import org.flixel.FlxObject;
 	import org.flixel.FlxPoint;
 	import org.flixel.FlxSprite;
 	import utils.Registry;
@@ -10,6 +11,8 @@ package basics {
 	 * @author GFM
 	 */
 	public class Basic extends FlxSprite {
+		
+		static protected var reg:Registry = Registry.self;
 		
 		public var grazed:Boolean;
 		public var damage:Number;
@@ -33,7 +36,7 @@ package basics {
 		}
 		
 		override public function update():void {
-			if (dieOnExit && (x < -64 || x > FlxG.width + 64 || y < -64 || y > FlxG.height + 64)) {
+			if (dieOnExit && (x < -16 || x > CONST::WIDTH + 16 || y < -16 || y > CONST::HEIGHT + 16)) {
 				diedOnExit = true;
 				kill();
 			}
@@ -41,9 +44,9 @@ package basics {
 		
 		override public function kill():void {
 			super.kill();
-			if (!diedOnExit && !(ID & Registry.BULLETID)) {
-				Registry.explParticles.at(this);
-				Registry.explParticles.start(true, 0, 0, 4);
+			if (!diedOnExit && !(ID & CONST::BULLETID)) {
+				reg.explParticles.at(this);
+				reg.explParticles.start(true, 0, 0, 4);
 			}
 			diedOnExit = false;
 		}
@@ -60,6 +63,20 @@ package basics {
 				return Math.sqrt(dist) < maxR;
 			}
 			return false;
+		}
+		public function targetThis(other:FlxObject, speed:Number, alpha:Number):void {
+			var dx:Number = x + center.x - other.x;
+			var dy:Number = y + center.y - other.y;
+			var d:Number = 1 / Math.sqrt(dx *dx + dy*dy);
+			
+			// TODO optimize
+			
+			dx += velocity.x*d;
+			dy += velocity.y*d;
+			d = 1 / Math.sqrt(dx*dx + dy*dy);
+			
+			other.velocity.x = (1-alpha)*other.velocity.x + alpha*dx*d*speed;
+			other.velocity.y = (1-alpha)*other.velocity.y + alpha*dy*d*speed;
 		}
 	}
 }

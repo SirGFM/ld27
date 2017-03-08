@@ -20,7 +20,7 @@ package enemiesPkg {
 		
 		override public function reset(X:Number, Y:Number):void {
 			super.reset(X, Y);
-			velocity.y = Registry.enSpeed;
+			velocity.y = reg.enSpeed;
 			if (!shooter)
 				shooter = new EnWeakTurret();
 			shooter.revive();

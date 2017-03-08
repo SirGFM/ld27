@@ -3,12 +3,15 @@ package {
 	import com.wordpress.gfmgamecorner.LogoGFM;
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
+	import flash.display.StageDisplayState;
 	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import org.flixel.FlxGame;
 	import org.flixel.FlxU;
 	import states.Menustate;
 	import states.Playstate;
 	import states.Teststate;
+	import utils.Registry;
 	
 	// Game link:
 	// https://dl.dropboxusercontent.com/u/55733901/LD48/ld27/gfm_ld27.html
@@ -23,12 +26,13 @@ package {
 	public class Main extends FlxGame {
 		
 		private var logo:LogoGFM;
+		static private var _mouseOnScreen:Boolean;
 		
 		public function Main():void {
-			super(256, 256, Menustate, 2, 60, 30, true);
+			super(CONST::WIDTH, CONST::HEIGHT, Menustate, 2, 30, 30, true);
 			
-			logo = null;
-			return;
+			//logo = null;
+			//return;
 			
 			logo = new LogoGFM(true);
 			logo.scaleX = 2;
@@ -36,6 +40,7 @@ package {
 			logo.x = (512 - logo.width) / 2;
 			logo.y = (512 - logo.height) / 2;
 			addChild(logo);
+			_mouseOnScreen = false;
 		}
 		
 		override protected function create(FlashEvent:Event):void {
@@ -51,28 +56,39 @@ package {
 			super.create(FlashEvent);
 			
 			createOverlay();
+			Registry.self.stage = stage;
+			
+			addEventListener(MouseEvent.MOUSE_OVER, onActivate, false, 0, true);
+			addEventListener(MouseEvent.MOUSE_OUT, onDeactivate, false, 0, true);
+			
+			// stage.displayState = StageDisplayState.FULL_SCREEN;
 		}
 		
 		private function createOverlay():void {
 			var bm:BitmapData = new BitmapData(512, 512, true, 0);
 			var data:Vector.<uint> = bm.getVector(bm.rect);
-			var j:int = 0;
+			var j:int = 1;
 			while (j < 512){
 				var i:int = 0;
-				var color:uint = FlxU.abs(j - 256) / 8;
-				color *= 0x10101;
-				if (j % 2 == 0)
-					color += 0x33000000;
-				else
-					color += 0x55000000;
 				while (i < 512) {
-					data[i + j*512] = color;
+					data[i + j*512] = 0x88000000;
 					i++;
 				}
-				j++;
+				j += 2;
 			}
 			bm.setVector(bm.rect, data);
-			addChild(new Bitmap(bm));
+			var b:Bitmap = new Bitmap(bm);
+			addChild(b);
+		}
+		
+		static public function get mouseOnScreen():Boolean {
+			return _mouseOnScreen;
+		}
+		private function onActivate(ev:Event):void {
+			_mouseOnScreen = true;
+		}
+		private function onDeactivate(ev:Event):void {
+			_mouseOnScreen = false;
 		}
 	}
 }

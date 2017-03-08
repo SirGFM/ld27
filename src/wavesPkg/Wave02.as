@@ -12,7 +12,7 @@ package wavesPkg {
 	public class Wave02 extends Spawner {
 		
 		override protected function spawn():void {
-			var e:HalfTurnEnemy = Registry.enemies.recycle(HalfTurnEnemy) as HalfTurnEnemy;
+			var e:HalfTurnEnemy = reg.enemies.recycle(HalfTurnEnemy) as HalfTurnEnemy;
 			var i:int = (FlxG.random() * 100) % 16;
 			e.reset(16*i, -16);
 		}

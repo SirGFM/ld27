@@ -1,6 +1,6 @@
-package basics {
+package particlesPkg {
 	
-	import org.flixel.FlxParticle;
+	import org.flixel.FlxSprite;
 	import utils.Registry;
 	import utils.Resources;
 	import utils.Sounds;
@@ -9,7 +9,9 @@ package basics {
 	 * ...
 	 * @author GFM
 	 */
-	public class MyParticle extends FlxParticle {
+	public class MyParticle extends FlxSprite {
+		
+		static protected var reg:Registry = Registry.self;
 		
 		public function MyParticle() {
 			super();
@@ -23,13 +25,9 @@ package basics {
 				kill();
 		}
 		
-		override public function onEmit():void {
-			super.onEmit();
-			if (ID & Registry.PLAYERID)
-				play("hitEnemy");
-			else if (ID & Registry.ENEMYID)
-				play("hitPlayer");
-			Sounds.playHit();
+		override public function revive():void {
+			super.revive();
+			allowCollisions = NONE;
 		}
 	}
 }

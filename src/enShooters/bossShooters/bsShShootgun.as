@@ -20,7 +20,7 @@ package enShooters.bossShooters {
 			var X:Number = parent.x + parent.width/2 - 6;
 			var Y:Number = parent.y;
 			var W:Number = (parent.width - 12) / 9;
-			var v:Number = Registry.enBlSpeed;
+			var v:Number = reg.enBlSpeed;
 			
 			var ang:Number = (75 + (FlxG.random() * 100 % 50 - 25)) * Math.PI / 180;
 			var dang:Number = 75 * Math.PI / 180 / 9;
@@ -36,10 +36,9 @@ package enShooters.bossShooters {
 		}
 		
 		private function create(X:Number, Y:Number, v:Number, ang:Number):void {
-			var b:Bullet = Registry.enBullets.recycle(Bullet) as Bullet;
+			var b:Bullet = reg.enBullets.recycle(Bullet) as Bullet;
 			b.reset(X, Y);
-			b.ID = Registry.ENBULLETID;
-			Resources.enBulletBucky(b);
+			b.enBucky();
 			b.velocity.x = v*Math.cos(ang);
 			b.velocity.y = v*Math.sin(ang);
 		}

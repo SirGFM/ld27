@@ -13,7 +13,7 @@ package wavesPkg {
 		
 		override protected function spawn():void {
 			var x:int = (FlxG.random()*100) % 32;
-			var e:SimpleEnemy = Registry.enemies.recycle(SimpleEnemy) as SimpleEnemy;
+			var e:SimpleEnemy = reg.enemies.recycle(SimpleEnemy) as SimpleEnemy;
 			e.reset(8*x, -16);
 		}
 		

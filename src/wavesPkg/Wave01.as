@@ -14,9 +14,9 @@ package wavesPkg {
 		private var X:Number;
 		
 		override protected function spawn():void {
-			var e:BasicEnemy = Registry.enemies.recycle(BasicEnemy) as BasicEnemy;
+			var e:BasicEnemy = reg.enemies.recycle(BasicEnemy) as BasicEnemy;
 			e.reset(X, -16);
-			e = Registry.enemies.recycle(BasicEnemy) as BasicEnemy;
+			e = reg.enemies.recycle(BasicEnemy) as BasicEnemy;
 			e.reset(X+20, -16);
 		}
 		
@@ -26,7 +26,7 @@ package wavesPkg {
 			if (FlxG.random() > 0.5)
 				X = 10;
 			else
-				X = FlxG.width - 36;
+				X = CONST::WIDTH - 36;
 		}
 	}
 }

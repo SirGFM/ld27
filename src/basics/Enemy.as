@@ -2,6 +2,7 @@ package basics {
 	import collectibles.SwitchWeapon;
 	import collectibles.TypePUP;
 	import org.flixel.FlxG;
+	import particlesPkg.ThrottleEmitter;
 	import utils.Registry;
 	
 	/**
@@ -13,11 +14,22 @@ package basics {
 		protected var score:int;
 		protected var shooter:Spawner;
 		
-		public function Enemy() {
+		protected var _throttle:ThrottleEmitter;
+		
+		public function Enemy(hasThrottle:Boolean = true, offsetY:Number = 0) {
 			super();
 			damage = 1000;
-			ID = Registry.ENEMYID;
+			ID = CONST::ENEMYID;
 			score = 21;
+			
+			if (hasThrottle)
+				_throttle = new ThrottleEmitter(true, 1, 3, offsetY);
+		}
+		override public function destroy():void {
+			super.destroy();
+			if (_throttle)
+				_throttle.destroy();
+			_throttle = null;
 		}
 		
 		override public function update():void {
@@ -27,17 +39,23 @@ package basics {
 					shooter.update();
 				else
 					shooter.revive();
-			
+			if (_throttle)
+				_throttle.updateEmitter(this);
+		}
+		override public function draw():void {
+			if (_throttle)
+				_throttle.draw();
+			super.draw();
 		}
 		
 		override public function hurt(Damage:Number):void {
 			super.hurt(Damage);
 			if (!alive) {
-				Registry.score.inc(score);
+				reg.score.inc(score);
 				if (FlxG.random() < 0.3)
-					(Registry.collectibles.recycle(TypePUP) as Basic).reset(x + center.x, y + center.y);
+					(reg.collectibles.recycle(TypePUP) as Basic).reset(x + center.x, y + center.y);
 				else if (FlxG.random() < 0.2)
-					(Registry.collectibles.recycle(SwitchWeapon) as Basic).reset(x + center.x, y + center.y);
+					(reg.collectibles.recycle(SwitchWeapon) as Basic).reset(x + center.x, y + center.y);
 			}
 		}
 		

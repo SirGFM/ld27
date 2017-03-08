@@ -3,12 +3,15 @@ package basics {
 	import org.flixel.FlxBasic;
 	import org.flixel.FlxG;
 	import org.flixel.FlxObject;
+	import utils.Registry;
 	
 	/**
 	 * ...
 	 * @author GFM
 	 */
 	public class Spawner extends FlxBasic {
+		
+		static protected var reg:Registry = Registry.self;
 		
 		private var _time:Number;
 		private var maxSpawnTime:Number;
@@ -42,5 +45,9 @@ package basics {
 		}
 		
 		public function setParent(o:FlxObject):void { }
+		
+		public static function factory(c:Class):Spawner {
+			return new c();
+		}
 	}
 }

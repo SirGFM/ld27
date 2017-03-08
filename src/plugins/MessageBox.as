@@ -22,6 +22,7 @@ package plugins {
 		private var label:FlxText;
 		private var txt:String;
 		private var lines:Array;
+		private var skip:FlxText;
 		
 		private var timer:Number;
 		
@@ -36,12 +37,20 @@ package plugins {
 			wnd.drawLine(0, 0, 0, 64, 0xa0333333);
 			label = new FlxText(18, 66, 220, "");
 			label.shadow = 0x33333333;
+			
+			skip = new FlxText(16, 128-12, 220, "Space to skip");
+			skip.setFormat(null, 8, 0xffffff, "right", 0x33333333);
 			kill();
 		}
 		
 		override public function update():void {
 			if (txt.length > 0) {
-				if (timer > 0)
+				if (FlxG.keys.justPressed("SPACE")) {
+					label.text += txt;
+					txt = "";
+					timer = 0.7;
+				}
+				else if (timer > 0)
 					timer -= FlxG.elapsed;
 				else {
 					label.text += txt.substr(0, 1);
@@ -52,8 +61,11 @@ package plugins {
 						timer = 0.7;
 				}
 			}
-			else if (timer > 0)
+			else if (timer > 0) {
+				if (FlxG.keys.justPressed("SPACE"))
+					timer = FlxG.elapsed;
 				timer -= FlxG.elapsed;
+			}
 			else if (lines.length > 0) {
 				label.text = "";
 				txt = lines.shift();
@@ -64,6 +76,7 @@ package plugins {
 		override public function draw():void {
 			wnd.draw();
 			label.draw();
+			skip.draw();
 		}
 		
 		public function wakeup(src:int):void {

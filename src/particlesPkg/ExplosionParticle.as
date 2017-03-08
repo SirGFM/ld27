@@ -1,4 +1,4 @@
-package basics {
+package particlesPkg {
 	
 	import org.flixel.FlxG;
 	import org.flixel.FlxParticle;
@@ -33,6 +33,8 @@ package basics {
 			play("detonate");
 			timer = 2;
 			Sounds.playExplosion();
+			allowCollisions = NONE;
+			drag.make(10, 10);
 		}
 	}
 }

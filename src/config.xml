@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<flex-config>
+	<compiler>
+		
+		<!-- Game's width -->
+		<define append="true">
+			<name>CONST::WIDTH</name>
+			<value>256</value>
+		</define>
+		<!-- Game's height -->
+		<define append="true">
+			<name>CONST::HEIGHT</name>
+			<value>256</value>
+		</define>
+		
+		<!-- player -->
+		<define append="true">
+			<name>CONST::PLAYERID</name>
+			<value>1</value>
+		</define>
+		<!-- enemy -->
+		<define append="true">
+			<name>CONST::ENEMYID</name>
+			<value>2</value>
+		</define>
+		<!-- Objects are either player or enemy -->
+		<define append="true">
+			<name>CONST::OBJECTID</name>
+			<value>CONST::PLAYERID|CONST::ENEMYID</value>
+		</define>
+		
+		<!-- bullet -->
+		<define append="true">
+			<name>CONST::BULLETID</name>
+			<value>4</value>
+		</define>
+		<!-- player bullet -->
+		<define append="true">
+			<name>CONST::PLBULLETID</name>
+			<value>CONST::BULLETID|CONST::PLAYERID</value>
+		</define>
+		<!-- enemy bullet -->
+		<define append="true">
+			<name>CONST::ENBULLETID</name>
+			<value>CONST::BULLETID|CONST::ENEMYID</value>
+		</define>
+		
+		<!-- Collectible. This forces it to not collide with bullets or enemies -->
+		<define append="true">
+			<name>CONST::COLLECTIBLEID</name>
+			<value>8|CONST::BULLETID|CONST::ENEMYID</value>
+		</define>
+		
+	</compiler>
+</flex-config>

@@ -14,11 +14,11 @@ package plShooters {
 		
 		override protected function spawn():void {
 			var b:Bullet;
-			var parent:FlxObject = Registry.player
+			var parent:FlxObject = reg.player;
 			var X:Number = parent.x;
 			var Y:Number = parent.y;
 			var W:Number = parent.width / 7;
-			var v:Number = Registry.plBlSpeed;
+			var v:Number = reg.plBlSpeed;
 			
 			// these angles are all wrong... it's shifted -90 degrees!
 			// (0 being to the right and spining counter-clockwise)
@@ -45,11 +45,10 @@ package plShooters {
 		}
 		
 		private function create(X:Number, Y:Number, vx:Number, vy:Number):void {
-			var b:Bullet = Registry.plBullets.recycle(Bullet) as Bullet;
+			var b:Bullet = reg.plBullets.recycle(Bullet) as Bullet;
 			b.reset(X, Y);
-			b.ID = Registry.PLBULLETID;
-			b.damage = Registry.plDamage*1.5;
-			Resources.plBulletBucky(b);
+			b.plBucky();
+			b.damage = reg.plDamage*1.5;
 			b.velocity.x = vx;
 			b.velocity.y = vy;
 		}

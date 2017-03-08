@@ -25,14 +25,13 @@ package enShooters.bossShooters {
 			var X:Number = parent.x + parent.width/2 - 16;
 			var Y:Number = parent.y + 10;
 			
-			create(X, Y, Registry.enBlSpeed);
+			create(X, Y, reg.enBlSpeed);
 		}
 		
 		private function create(X:Number, Y:Number, v:Number):void {
-			var b:Bullet = Registry.enBullets.recycle(Bullet) as Bullet;
+			var b:Bullet = reg.enBullets.recycle(Bullet) as Bullet;
 			b.reset(X, Y);
-			b.ID = Registry.ENBULLETID;
-			Resources.bossLaserBullet(b);
+			b.bsLaser();
 			b.velocity.x = 0;
 			b.velocity.y = v;
 		}

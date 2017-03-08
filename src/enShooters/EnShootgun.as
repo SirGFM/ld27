@@ -19,7 +19,7 @@ package enShooters {
 			var X:Number = parent.x;
 			var Y:Number = parent.y;
 			var W:Number = parent.width / 7;
-			var v:Number = Registry.enBlSpeed;
+			var v:Number = reg.enBlSpeed;
 			X += 2 * W;
 			
 			// these angles are all wrong... it's shifted -90 degrees!
@@ -35,10 +35,9 @@ package enShooters {
 		}
 		
 		private function create(X:Number, Y:Number, vx:Number, vy:Number):void {
-			var b:Bullet = Registry.enBullets.recycle(Bullet) as Bullet;
+			var b:Bullet = reg.enBullets.recycle(Bullet) as Bullet;
 			b.reset(X, Y);
-			b.ID = Registry.ENBULLETID;
-			Resources.enBulletBucky(b);
+			b.enBucky();
 			b.velocity.x = vx;
 			b.velocity.y = vy;
 		}

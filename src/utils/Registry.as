@@ -1,9 +1,13 @@
 package utils {
 	import basics.Player;
+	import flash.display.Stage;
 	import org.flixel.FlxBasic;
 	import org.flixel.FlxEmitter;
 	import org.flixel.FlxG;
 	import org.flixel.FlxGroup;
+	import particlesPkg.ExplosionEmitter;
+	import particlesPkg.HitEmitter;
+	import particlesPkg.ThrottleEmitter;
 	import plugins.LifeCounter;
 	import plugins.MessageBox;
 	import plugins.Score;
@@ -15,50 +19,138 @@ package utils {
 	 */
 	public class Registry {
 		
-		// key definitions (so it can be customizable)
-		static public var left:String = "LEFT";
-		static public var right:String = "RIGHT";
-		static public var up:String = "UP";
-		static public var down:String = "DOWN";
-		static public var shoot:String = "X";
-		static public var special:String = "C";
+		static public const self:Registry = new Registry;
 		
-		// constants
-		static public const PLAYERID:uint = 1;
-		static public const ENEMYID:uint = 2;
-		static public const OBJECTID:uint = 3;	// PL | ENE
-		static public const BULLETID:uint = 4;
-		static public const PLBULLETID:uint = 5;// 1 | BUL
-		static public const ENBULLETID:uint = 6;// 2 | BUL
-		static public const COLLECTIBLEID:uint = 14;// 8 | BUL | ENE
-		static public var plSpeed:Number = 100;
-		static public var plDamage:Number = 0.25;
-		static public var plHealth:Number = 1;
-		static public var plBlSpeed:Number = 175;
-		static public var enSpeed:Number = 100;
-		static public var enBlSpeed:Number = 175;
+		public var menuBg:FlxGroup = null;
+		
+		public var stage:Stage = null;
+		
+		// options stuff
+		private var _life:int = 3;
+		private var _music:int = 4;
+		private var _sfx:int = 2;
+		private var _fps:int = 0;
+		private var _dps:int = 0;		// draws-per-second
+		
+		public function set life(val:int):void {
+			_life = val;
+			if (_life > 4)
+				_life = 0;
+			else if (_life < 0)
+				_life = 4;
+		}
+		public function get life():int {
+			return _life;
+		}
+		public function set fps(val:int):void {
+			_fps = val;
+			if (_fps == 1)
+				FlxG.framerate = 60;
+			else
+				FlxG.framerate = 30;
+			
+		}
+		public function get fps():int {
+			return _fps;
+		}
+		public function set dps(val:int):void {
+			_dps = val;
+			if (_dps == 1)
+				FlxG.flashFramerate = 60;
+			else
+				FlxG.flashFramerate = 30;
+			
+		}
+		public function get dps():int {
+			return _dps;
+		}
+		public function set music(val:int):void {
+			_music = val;
+			if (_music > 4)
+				_music = 0;
+			else if (_music < 0)
+				_music = 4;
+			Sounds.musicvolume = _music / 4;
+		}
+		public function get music():int {
+			return _music;
+		}
+		public function set sfx(val:int):void {
+			_sfx = val;
+			if (_sfx > 4)
+				_sfx = 0;
+			else if (_sfx < 0)
+				_sfx = 4;
+			Sounds.sfxvolume = _sfx / 4;
+		}
+		public function get sfx():int {
+			return _sfx;
+		}
+		
+		// key definitions (so it can be customizable)
+		public var left:String = "LEFT";
+		public var right:String = "RIGHT";
+		public var up:String = "UP";
+		public var down:String = "DOWN";
+		public var focus:String = "SHIFT";
+		public var shoot:String = "X";
+		public var special:String = "SPACE";
+		
+		public var plSpeed:Number = 100;
+		public var plDamage:Number = 0.25;
+		public var plHealth:Number = 1;
+		public var plBlSpeed:Number = 175;
+		public var enSpeed:Number = 100;
+		public var enBlSpeed:Number = 150;
 		
 		// references (easier to acess than make an "static self" on the playstate...)
-		static public var waves:FlxGroup = null;
-		static public var player:Player = null;
-		static public var plBullets:FlxGroup = null;
-		static public var enemies:FlxGroup = null;
-		static public var enBullets:FlxGroup = null;
-		static public var collectibles:FlxGroup = null;
-		static public var plParticles:FlxEmitter = null;
-		static public var eneParticles:FlxEmitter = null;
-		static public var explParticles:FlxEmitter = null;
+		public var waves:FlxGroup = null;
+		public var player:Player = null;
+		public var plBullets:FlxGroup = null;
+		public var enemies:FlxGroup = null;
+		public var enBullets:FlxGroup = null;
+		public var collectibles:FlxGroup = null;
+		public var hitParticles:HitEmitter = null;
+		public var explParticles:ExplosionEmitter = null;
 		
 		// plugins
-		static public var lifeCounter:LifeCounter = null;
-		static public var score:Score = null;
-		static public var specialCounter:SpecialCounter = null;
-		static public var messageBox:MessageBox = null;
+		public var lifeCounter:LifeCounter = null;
+		public var score:Score = null;
+		public var specialCounter:SpecialCounter = null;
+		public var messageBox:MessageBox = null;
 		
-		static public var enableZaWarudo:Boolean = false;
-		static public var bossDefeated:Boolean = false;
+		public var enableZaWarudo:Boolean = false;
+		public var bossDefeated:Boolean = false;
 		
-		static public function clear():void {
+		public function garbagecollect(plbul:Boolean=true, ene:Boolean=true, enbul:Boolean=true, col:Boolean=true):void {
+			var item:FlxBasic;
+			if (plbul) {
+				for each (item in plBullets) {
+					if (!item.exists)
+						plBullets.remove(item, true);
+				}
+			}
+			if (ene) {
+				for each (item in enemies) {
+					if (!item.exists)
+						enemies.remove(item, true);
+				}
+			}
+			if (enbul) {
+				for each (item in enBullets) {
+					if (!item.exists)
+						enBullets.remove(item, true);
+				}
+			}
+			if (col) {
+				for each (item in collectibles) {
+					if (!item.exists)
+						collectibles.remove(item, true);
+				}
+			}
+		}
+		
+		public function clear():void {
 			left = "LEFT";
 			right = "RIGHT";
 			up = "UP";
@@ -72,8 +164,7 @@ package utils {
 			enemies = null;
 			enBullets = null;
 			collectibles = null;
-			plParticles = null;
-			eneParticles = null;
+			hitParticles = null;
 			explParticles = null;
 			messageBox = null;
 			

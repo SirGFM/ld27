@@ -29,8 +29,10 @@ package plugins {
 			autoIncrease = true;
 		}
 		
+		// TODO remove comments here
+		
 		override public function update():void {
-			if (isEnabled) {
+			/*if (isEnabled) {
 				if (inc)
 					label.alpha += FlxG.elapsed * 2.5;
 				else
@@ -43,10 +45,10 @@ package plugins {
 				label.alpha = 1.1 -  cooldown * 0.09;
 				if (cooldown <= 0)
 					dec = false;
-			}
+			}*/
 		}
 		override public function draw():void {
-			label.draw();
+			//label.draw();
 		}
 		
 		public function get isEnabled():Boolean {

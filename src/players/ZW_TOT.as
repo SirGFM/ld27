@@ -1,7 +1,9 @@
 package players {
 	
 	import basics.Player;
+	import collectibles.SwitchWeapon;
 	import org.flixel.FlxG;
+	import plShooters.PlLaserBurst;
 	import plShooters.PlShootgun;
 	import utils.Registry;
 	import utils.Resources;
@@ -13,9 +15,11 @@ package players {
 	public class ZW_TOT extends Player {
 		
 		public function ZW_TOT() {
-			super(new PlShootgun());
+			super(SwitchWeapon.LASER);
 			Resources.zaWarudoGFX(this);
-			canBurnout = false;
+			
+			center.make(11.5, 11.5);
+			radius = 2.75;
 		}
 		
 		override public function update():void {
@@ -30,7 +34,7 @@ package players {
 		override public function postUpdate():void {
 			super.postUpdate();
 			if (specialTimer > 8) {
-				Registry.plBullets.update();
+				reg.plBullets.update();
 				FlxG.timeScale = 0.0;
 				FlxG.elapsed = 0;
 			}

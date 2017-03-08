@@ -13,6 +13,8 @@ package plugins {
 	 */
 	public class TypePlugin extends FlxBasic {
 		
+		static protected var reg:Registry = Registry.self;
+		
 		private var label:FlxText;
 		private var icon:FlxSprite;
 		
@@ -33,7 +35,7 @@ package plugins {
 		}
 		
 		override public function draw():void {
-			var t:uint = Registry.player.type;
+			var t:uint = reg.player.type;
 			label.draw();
 			if (t != Player.NOTYPE) {
 				icon.frame = t;

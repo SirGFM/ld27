@@ -55,31 +55,23 @@ package utils {
 			data = null;
 			local_density = null;
 			dirty = true;
-			y = -FlxG.height;
+			y = -CONST::HEIGHT;
 		}
 		
 		override public function update():void {
 			if (y > 256)
-				y -= FlxG.height;
+				y -= CONST::HEIGHT;
 		}
 		override public function draw():void {
 			var dy:Number;
 			if (y > 0)
-				dy = -FlxG.height;
+				dy = -CONST::HEIGHT;
 			else
-				dy = FlxG.height;
+				dy = CONST::HEIGHT;
 			super.draw();
 			y += dy;
 			super.draw();
 			y -= dy;
-			/*dy /= 3;
-			y += dy;
-			super.draw();
-			y -= dy;
-			dy *= 5;
-			y += dy;
-			super.draw();
-			y -= dy;*/
 		}
 		
 		private function draw_halo_star(X0:Number, Y0:Number, size:Number, brightness:int):void {
@@ -143,6 +135,21 @@ package utils {
 		}
 		private function draw_star(X:Number, Y:Number, size:Number, brightness:int):void {
 			var color:uint = 0x1000000 * brightness;
+			/**
+			if (brightness < 35)
+				color += 0xffbd6f;
+			else if (brightness < 60)
+				color += 0xffddb4;
+			else if (brightness < 80)
+				color += 0xfff4e8;
+			else if (brightness < 110)
+				color += 0xfbf8ff;
+			else if (brightness < 165)
+				color += 0xcad8ff;
+			else if (brightness < 200)
+				color += 0xaabfff;
+			else
+				color += 0x9db4ff;
 			/**/
 			if (brightness < 100)
 				color += 0x8080aa;
@@ -155,7 +162,7 @@ package utils {
 			/**/
 			//color += 0xffffff;
 			color |= 0x1000000;
-			draw_halo_star(X, Y, size, color)
+			draw_halo_star(X, Y, size, color);
 			//pixels.floodFill(50, 50, 0xffffffff);
 		}
 	}

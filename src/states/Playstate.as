@@ -1,14 +1,13 @@
 package states {
 	
 	import basics.Basic;
-	import basics.ExplosionParticle;
-	import basics.MyParticle;
+	import basics.Boss;
+	import basics.Bullet;
 	import basics.Player;
 	import basics.Spawner;
 	import collectibles.TypePUP;
 	import enemiesPkg.BasicEnemy;
 	import enemiesPkg.HalfTurnEnemy;
-	import objs.Boss;
 	import org.flixel.FlxEmitter;
 	import org.flixel.FlxG;
 	import org.flixel.FlxGroup;
@@ -17,6 +16,11 @@ package states {
 	import org.flixel.FlxSprite;
 	import org.flixel.FlxState;
 	import org.flixel.FlxU;
+	import particlesPkg.ExplosionEmitter;
+	import particlesPkg.ExplosionParticle;
+	import particlesPkg.HitEmitter;
+	import particlesPkg.MyParticle;
+	import particlesPkg.ThrottleEmitter;
 	import players.ZW_TOT;
 	import plugins.LifeCounter;
 	import plugins.MessageBox;
@@ -35,6 +39,9 @@ package states {
 	 */
 	public class Playstate extends FlxState {
 		
+		static protected var reg:Registry = Registry.self;
+		
+		private var collideable:FlxGroup;
 		private var gameover:Boolean;
 		private var fading:Boolean;
 		
@@ -71,7 +78,7 @@ package states {
 			
 			var waves:FlxGroup = new FlxGroup();
 			waves.visible = false;
-			var pl:Player = Registry.player;
+			var pl:Player = reg.player;
 			pl.reset(128, 200);
 			var plBullets:FlxGroup = new FlxGroup();
 			var enemies:FlxGroup = new FlxGroup();
@@ -79,51 +86,24 @@ package states {
 			var collectibles:FlxGroup = new FlxGroup();
 			
 			var particle:FlxParticle;
-			var plEmitter:FlxEmitter = new FlxEmitter(0, 0, 64);
-			var eneEmitter:FlxEmitter = new FlxEmitter(0, 0, 16);
-			var explParticles:FlxEmitter = new FlxEmitter(0, 0, 64);
-			plEmitter.setRotation(0, 0);
-			plEmitter.setXSpeed(0, 0);
-			plEmitter.setYSpeed(0, 0);
-			eneEmitter.setRotation(0, 0);
-			eneEmitter.setXSpeed(0, 0);
-			eneEmitter.setYSpeed(0, 0);
-			explParticles.setRotation(0, 0);
-			explParticles.setXSpeed(-20, 20);
-			explParticles.setYSpeed(-20, 20);
-			var i:int = 0;
-			while (i < 64) {
-				particle = new MyParticle();
-				particle.ID = Registry.PLAYERID;
-				particle.kill();
-				plEmitter.add(particle);
-				i++;
-			}
-			i = 0;
-			while (i < 64) {
-				particle = new ExplosionParticle();
-				particle.kill();
-				explParticles.add(particle);
-				i++;
-			}
-			i = 0;
-			while (i < 16) {
-				particle = new MyParticle();
-				particle.ID = Registry.ENEMYID;
-				particle.kill();
-				eneEmitter.add(particle);
-				i++;
-			}
+			var hitParticles:HitEmitter = new HitEmitter();
+			var explParticles:ExplosionEmitter = new ExplosionEmitter();
+			
+			collideable = new FlxGroup();
+			collideable.add(pl);
+			collideable.add(enemies);
+			collideable.add(plBullets);
+			collideable.add(enBullets);
+			collideable.add(collectibles);
 			
 			add(waves);
-			add(pl);
 			add(enemies);
+			add(pl);
 			add(plBullets);
 			add(enBullets);
 			add(collectibles);
-			add(plEmitter);
-			add(eneEmitter);
 			add(explParticles);
+			add(hitParticles);
 			
 			var lc:LifeCounter = FlxG.getPlugin(LifeCounter) as LifeCounter;
 			if (!lc)
@@ -155,19 +135,18 @@ package states {
 				mb = FlxG.addPlugin(new MessageBox) as MessageBox;
 			mb.wakeup(0);
 			
-			Registry.waves = waves;
-			Registry.plBullets = plBullets;
-			Registry.player = pl;
-			Registry.enemies = enemies;
-			Registry.enBullets = enBullets;
-			Registry.plParticles = plEmitter;
-			Registry.eneParticles = eneEmitter;
-			Registry.collectibles = collectibles;
-			Registry.explParticles = explParticles;
-			Registry.lifeCounter = lc;
-			Registry.score = sc;
-			Registry.specialCounter = sc2;
-			Registry.messageBox = mb;
+			reg.waves = waves;
+			reg.plBullets = plBullets;
+			reg.player = pl;
+			reg.enemies = enemies;
+			reg.enBullets = enBullets;
+			reg.hitParticles = hitParticles;
+			reg.collectibles = collectibles;
+			reg.explParticles = explParticles;
+			reg.lifeCounter = lc;
+			reg.score = sc;
+			reg.specialCounter = sc2;
+			reg.messageBox = mb;
 			
 			Sounds.playGameSong();
 			
@@ -177,73 +156,44 @@ package states {
 		
 		override public function update():void {
 			super.update();
-			if (!Registry.player.alive) {
-				if (!gameover) {
-					gameover = true;
-					Registry.messageBox.wakeup(2);
-				}
-				else if (!Registry.messageBox.alive && !fading) {
-					fading = true;
-					FlxG.fade(0xff000000, 1, function():void { FlxG.switchState(new Menustate()); } );
-				}
-			}
-			else if (Registry.bossDefeated) {
-				if (!gameover) {
-					gameover = true;
-					Registry.messageBox.wakeup(3);
-				}
-				else if (!Registry.messageBox.alive && !fading) {
-					fading = true;
-					Registry.enableZaWarudo = true;
-					FlxG.fade(0xff000000, 1, function():void { FlxG.switchState(new Menustate()); } );
-				}
-			}
-			FlxG.overlap(this, null, onOverlap, firstColCheck);
+			checkEndGame();
+			
+			FlxG.overlap(collideable, null, onOverlap, firstColCheck);
 		}
 		
 		private function onOverlap(obj1:Basic, obj2:Basic):void {
-			if ((obj1.ID == Registry.COLLECTIBLEID) && (obj2.ID & Registry.PLAYERID)) {
+			var id1:int = obj1.ID;
+			var id2:int = obj2.ID;
+			
+			if (id1 & id2 || !obj1.alive || !obj2.alive)
+				return;
+			
+			if ((id1 == CONST::COLLECTIBLEID) && (id2 & CONST::PLAYERID)) {
 				if (obj1 is TypePUP)
-					Registry.player.type = obj1.frame;
+					reg.player.type = obj1.frame;
 				else
-					Registry.player.weapon = obj1.frame;
+					reg.player.weapon = obj1.frame;
 				obj1.kill();
 			}
-			else if ((obj2.ID == Registry.COLLECTIBLEID) && (obj1.ID & Registry.PLAYERID)) {
+			else if ((id2 == CONST::COLLECTIBLEID) && (id1 & CONST::PLAYERID)) {
 				if (obj2 is TypePUP)
-					Registry.player.type = obj2.frame;
+					reg.player.type = obj2.frame;
 				else
-					Registry.player.weapon = obj2.frame;
+					reg.player.weapon = obj2.frame;
 				obj2.kill();
 			}
-			else if (obj1.ID & Registry.OBJECTID) {
+			else if (id1 & CONST::OBJECTID) {
 				obj1.hurt(obj2.damage);
 				obj2.kill();
-				if (obj2.ID & Registry.PLBULLETID) {
-					Registry.plParticles.at(obj1);
-					Registry.plParticles.emitParticle();
-				}
-				else if (obj2.ID & Registry.ENBULLETID) {
-					Registry.eneParticles.at(obj1);
-					Registry.eneParticles.emitParticle();
-				}
 			}
-			else {
+			else if (id2 & CONST::OBJECTID) {
 				obj2.hurt(obj1.damage);
 				obj1.kill();
-				if (obj1.ID & Registry.PLBULLETID) {
-					Registry.plParticles.at(obj2);
-					Registry.plParticles.emitParticle();
-				}
-				else if (obj1.ID & Registry.ENBULLETID) {
-					Registry.eneParticles.at(obj2);
-					Registry.eneParticles.emitParticle();
-				}
 			}
 		}
 		
 		private function firstColCheck(obj1:FlxObject, obj2:FlxObject):Boolean {
-			if (((obj1.ID & obj2.ID) != 0) || (obj1.allowCollisions==FlxObject.NONE) || (obj2.allowCollisions==FlxObject.NONE))
+			if ((obj1.ID & obj2.ID)|| (obj1.allowCollisions == FlxObject.NONE) || (obj2.allowCollisions == FlxObject.NONE))
 				return false;
 			
 			var o1:Basic = obj1 as Basic;
@@ -251,7 +201,7 @@ package states {
 			if (!(o1 ||  o2))
 				return false;
 			
-			var wasHit:Boolean
+			var wasHit:Boolean;
 			
 			if (o1 is Boss)
 				wasHit = o1.didCollide(o2);
@@ -260,18 +210,50 @@ package states {
 			
 			if (!wasHit) {
 				if ((o1 is Player) && !o2.grazed) {
-					Sounds.playGraze();
-					Registry.score.inc(3);
+					reg.score.inc(3);
 					o2.grazed = true;
+					reg.hitParticles.emitGraze(o1, o2);
 				}
 				else if ((o2 is Player) && !o1.grazed) {
-					Sounds.playGraze();
-					Registry.score.inc(3);
+					reg.score.inc(3);
 					o1.grazed = true;
+					reg.hitParticles.emitGraze(o2, o1);
 				}
 			}
 			
 			return wasHit;
+		}
+		
+		private function getFromID(b1:Basic, b2:Basic, id:int):Basic {
+			if (b1.ID == id)
+				return b1;
+			else if (b2.ID == id)
+				return b2;
+			return null;
+		}
+		
+		private function checkEndGame():void {
+			if (!reg.player.alive) {
+				if (!gameover) {
+					gameover = true;
+					reg.messageBox.wakeup(2);
+				}
+				else if (!reg.messageBox.alive && !fading) {
+					fading = true;
+					FlxG.fade(0xff000000, 1, function():void { FlxG.switchState(new Menustate()); } );
+				}
+			}
+			else if (reg.bossDefeated) {
+				if (!gameover) {
+					gameover = true;
+					reg.messageBox.wakeup(3);
+				}
+				else if (!reg.messageBox.alive && !fading) {
+					fading = true;
+					reg.enableZaWarudo = true;
+					FlxG.fade(0xff000000, 1, function():void { FlxG.switchState(new Menustate()); } );
+				}
+			}
 		}
 	}
 }

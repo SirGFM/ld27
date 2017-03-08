@@ -1,9 +1,15 @@
 package basics {
 	
+	import collectibles.SwitchWeapon;
 	import org.flixel.FlxG;
 	import org.flixel.FlxPoint;
 	import org.flixel.FlxSprite;
+	import org.flixel.FlxU;
+	import particlesPkg.ThrottleEmitter;
+	import plShooters.PlLaserBurst;
+	import plShooters.PlSeeker;
 	import plShooters.PlShootgun;
+	import plShooters.PlSpike;
 	import plShooters.PlTurret;
 	import utils.Registry;
 	import utils.Resources;
@@ -20,39 +26,49 @@ package basics {
 		static public const AGI:uint = 0x1;
 		static public const LIFE:uint = 0x2;
 		
-		static public const TURRET:uint = 0x0;
-		static public const SHOOTGUN:uint = 0x1;
-		
 		private var _invunerable:Number;
 		private var _type:uint;
 		
 		private var timer:Number;
 		private var shooter:Spawner;
-		
-		protected var canBurnout:Boolean;
-		private var shootingTime:Number;
-		private var burnout:Number;
+		private var mainShooter:uint;
+		private var curShooter:uint;
 		
 		protected var specialTimer:Number;
 		
-		public function Player(Shooter:Spawner = null) {
+		protected var _throttle:ThrottleEmitter;
+		private var _hitbox:FlxSprite;
+		
+		public function Player(Shooter:uint = 0xffffffff) {
 			super();
-			Resources.playerGFX(this);
-			ID = Registry.PLAYERID;
-			if (Shooter == null)
-				shooter = new PlTurret();
-			else
-				shooter = Shooter;
+			
+			ID = CONST::PLAYERID;
+			
+			curShooter = 0xffffffff;
+			if (Shooter == 0xffffffff)
+				Shooter = SwitchWeapon.TURRET;
+			weapon = Shooter;
+			mainShooter = Shooter;
+			
 			specialTimer = 0;
-			shootingTime = 0;
-			burnout = 0;
-			canBurnout = true;
 			type = 0;
+			_throttle = new ThrottleEmitter(false, 0.25, 0.33, 8);
+			
+			_hitbox = new FlxSprite();
+			_hitbox.visible = false;
+			_hitbox.moves = false;
+			Resources.hitboxGFX(_hitbox);
+			var str:String = FlxU.getClassName(this, true);
+			_hitbox.play(str);
 		}
 		override public function destroy():void {
 			super.destroy();
 			shooter.destroy();
 			shooter = null;
+			_throttle.destroy();
+			_throttle = null;
+			_hitbox.destroy();
+			_hitbox = null;
 		}
 		
 		override public function update():void {
@@ -65,21 +81,19 @@ package basics {
 					shooter.update();
 				timer -= step;
 			}
-			else if (burnout <= 0 && FlxG.keys.pressed(Registry.shoot)) {
+			else if (FlxG.keys.pressed(reg.shoot)) {
 				shooter.revive();
 				timer += shooter.time;
 			}
 			
-			if (canBurnout)
-				manageBurnout(step);
-			
 			if (specialTimer <= 0) { 
-				if (!Registry.specialCounter.isEnabled)
-					Registry.specialCounter.startCooldown();
-				else if (FlxG.keys.justPressed(Registry.special)) {
+				if (!reg.specialCounter.isEnabled)
+					reg.specialCounter.startCooldown();
+				else if (FlxG.keys.justPressed(reg.special)) {
 					specialTimer = 10;
-					Registry.specialCounter.activate();
-					special();
+					reg.specialCounter.activate();
+					// TODO enable special again
+					//special();
 				}
 			}
 			else {
@@ -88,15 +102,14 @@ package basics {
 			
 			if (_invunerable > 0) {
 				_invunerable -= step;
-				burnout = 0;
-				shootingTime = 0;
-				calcColorShooting();
 			}
 			else if (_invunerable > -1) {
 				flicker(0);
 				_invunerable = -1;
 				allowCollisions = ANY;
 			}
+			
+			_throttle.updateEmitter(this);
 			
 			manageAnimations();
 		}
@@ -105,27 +118,53 @@ package basics {
 			super.postUpdate();
 			if (x < 0)
 				x = 0;
-			else if (x + width > FlxG.width)
-				x = FlxG.width - width;
+			else if (x + width > CONST::WIDTH)
+				x = CONST::WIDTH - width;
 			if (y < 0)
 				y = 0;
-			else if (y + height > FlxG.height)
-				y = FlxG.height - height;
+			else if (y + height > CONST::HEIGHT)
+				y = CONST::HEIGHT - height;
+		}
+		
+		override public function draw():void {
+			_throttle.draw();
+			super.draw();
+			if (_hitbox.visible) {
+				_hitbox.x = x + 8;
+				_hitbox.y = y + 8;
+				_hitbox.postUpdate();
+				_hitbox.draw();
+			}
 		}
 		
 		private function manageMovement():void {
-			if (FlxG.keys.pressed(Registry.left))
-				velocity.x = -Registry.plSpeed;
-			else if (FlxG.keys.pressed(Registry.right))
-				velocity.x = Registry.plSpeed;
-			else
-				velocity.x = 0;
-			if (FlxG.keys.pressed(Registry.up))
-				velocity.y = -Registry.plSpeed;
-			else if (FlxG.keys.pressed(Registry.down))
-				velocity.y = Registry.plSpeed;
-			else
-				velocity.y = 0;
+			var vx:Number = 0;
+			var vy:Number = 0;
+			var speed:Number = reg.plSpeed
+			
+			if (FlxG.keys.pressed(reg.left))
+				vx = -speed;
+			else if (FlxG.keys.pressed(reg.right))
+				vx = speed;
+			if (FlxG.keys.pressed(reg.up))
+				vy = -speed;
+			else if (FlxG.keys.pressed(reg.down))
+				vy = speed;
+			
+			if (vx != 0 && vy != 0) {
+				// sqrt(2) = 1.414
+				// sin(45) = cos(45) = aprox 0.707
+				vx *= 0.707;
+				vy *= 0.707;
+			}
+			_hitbox.visible = FlxG.keys.pressed(reg.focus);
+			if (_hitbox.visible) {
+				vx *= 0.5;
+				vy *= 0.5;
+			}
+			
+			velocity.x = vx;
+			velocity.y = vy;
 		}
 		private function manageAnimations():void {
 			if (velocity.x > 0)
@@ -136,50 +175,12 @@ package basics {
 				play("def");
 		}
 		
-		private function manageBurnout(step:Number):void {
-			if (shootingTime >= 10) {
-				burnout = 10;
-				shootingTime = 0;
-				shooter.kill();
-			}
-			if (burnout > 0) {
-				burnout -= step;
-				var j:int = 0xff * (1 - burnout / 10);
-				color = 0xffff0000 + 0x101*j;
-			}
-			
-			if (shooter.alive) {
-				shootingTime += step;
-				calcColorShooting();
-			}
-			else if (shootingTime != 0 && !FlxG.keys.pressed(Registry.shoot)) {
-				shootingTime -= step;
-				if (shootingTime < 0)
-					shootingTime = 0;
-				calcColorShooting();
-			}
-		}
-		private function calcColorShooting():void {
-			var i:int = shootingTime;
-			var f:Number = 10 - shootingTime - i;
-			f *= 10;
-			f %= i+1;
-			f /= 10;
-			i = f * 0xff & 0xff;
-			var ni:int = 0xff * (1 - f) & 0xff;
-			color = 0xffff0000+0x101*ni;
-		}
-		
 		override public function kill():void {
 			super.kill();
-			if (Registry.lifeCounter.dec()) {
+			if (reg.lifeCounter.dec()) {
 				reset(128, 200);
 				invunerable = 3;
 			}
-		}
-		
-		protected function special():void {
-			invunerable = 10;
 		}
 		
 		public function get type():uint {
@@ -190,33 +191,42 @@ package basics {
 				_type = val;
 			
 			if (val == POWER)
-				Registry.plDamage = 0.5;
+				reg.plDamage = 0.5;
 			else
-				Registry.plDamage = 0.25;
+				reg.plDamage = 0.25;
 			
 			if (val == AGI)
-				Registry.plSpeed = 150;
+				reg.plSpeed = 150;
 			else
-				Registry.plSpeed = 100;
+				reg.plSpeed = 100;
 			
 			if (val == LIFE)
-				Registry.lifeCounter.inc();
+				reg.lifeCounter.inc();
 			
 			Sounds.playPUP();
 		}
 		
 		public function set weapon(val:uint):void {
-			if (val == TURRET && !(shooter is PlTurret)) {
+			if (val == curShooter)
+				return;
+			if (shooter) {
 				shooter.destroy();
+				Sounds.playWeapon();
+			}
+			if (val == SwitchWeapon.TURRET)
 				shooter = new PlTurret();
-				Sounds.playWeapon();
-			}
-			else if (val == SHOOTGUN && !(shooter is PlShootgun)) {
-				shooter.destroy();
+			else if (val == SwitchWeapon.SHOOTGUN)
 				shooter = new PlShootgun();
-				Sounds.playWeapon();
-			}
+			else if (val == SwitchWeapon.LASER)
+				shooter = new PlLaserBurst();
+			else if (val == SwitchWeapon.SEEK)
+				shooter = new PlSeeker();
+			else if (val == SwitchWeapon.SPIKE)
+				shooter = new PlSpike();
+			curShooter = val;
 		}
+		
+		protected function special():void { }
 		
 		protected function set invunerable(val:Number):void {
 			_invunerable = val;
@@ -227,22 +237,15 @@ package basics {
 		override public function reset(X:Number, Y:Number):void {
 			super.reset(X, Y);
 			timer = 0;
-			health = Registry.plHealth;
+			health = reg.plHealth;
 			damage = 1;
 			specialTimer = 0;
-			shootingTime = 0;
-			burnout = 0;
 			type = NOTYPE;
-			calcColorShooting();
 			
-			if (Registry.specialCounter)
-				Registry.specialCounter.wakeup();
+			if (reg.specialCounter)
+				reg.specialCounter.wakeup();
 			
-			shooter.kill();
-			if (!(shooter is PlTurret)) {
-				shooter.destroy();
-				shooter = new PlTurret();
-			}
+			weapon = mainShooter;
 		}
 	}
 }

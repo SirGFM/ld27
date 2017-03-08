@@ -18,13 +18,12 @@ package enShooters {
 		override protected function spawn():void {
 			var x:Number = parent.x +parent.width / 2;
 			var y:Number = parent.y;
-			var b:Bullet = Registry.enBullets.recycle(Bullet) as Bullet;
-			var pl:Player = Registry.player;
-			var speed:Number = Registry.enBlSpeed;
+			var b:Bullet = reg.enBullets.recycle(Bullet) as Bullet;
+			var pl:Player = reg.player;
+			var speed:Number = reg.enBlSpeed;
 			
 			b.reset(x, y);
-			b.ID = Registry.ENBULLETID;
-			Resources.enBulletPellet(b);
+			b.enPellet();
 			
 			var vy:Number = (pl.y + pl.height*0.5) - (b.y + b.height*0.5);
 			var vx:Number = (pl.x + pl.width * 0.5) - (b.x + b.width * 0.5);

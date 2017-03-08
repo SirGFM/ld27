@@ -13,10 +13,10 @@ package plShooters {
 	public class PlTurret extends Spawner {
 		
 		override protected function spawn():void {
-			var pl:Player = Registry.player;
+			var pl:Player = reg.player;
 			var x:Number = pl.x+2;
 			var y:Number = pl.y;
-			var v:Number = Registry.plBlSpeed;
+			var v:Number = reg.plBlSpeed;
 			var w:Number = (pl.width-4)/2;
 			
 			create(x, y, v);
@@ -25,17 +25,16 @@ package plShooters {
 		}
 		
 		private function create(x:Number, y:Number, v:Number):void {
-			var b:Bullet = Registry.plBullets.recycle(Bullet) as Bullet;
-			b.reset(x, y);
+			var b:Bullet = reg.plBullets.recycle(Bullet) as Bullet;
+			b.plPellet();
+			b.reset(x-b.center.x, y-b.center.y);
 			b.velocity.y = -v;
-			b.ID = Registry.PLBULLETID;
-			b.damage = Registry.plDamage*0.5;
-			Resources.plBulletPellet(b);
+			b.damage = reg.plDamage*0.5;
 		}
 		
 		override public function revive():void {
 			super.revive();
-			wakeup(0.3, 0.3, 0.05);
+			wakeup(0.3, 0.26, 0.05);
 		}
 	}
 }

@@ -3,6 +3,7 @@ package plugins {
 	import org.flixel.FlxBasic;
 	import org.flixel.FlxSprite;
 	import org.flixel.FlxText;
+	import utils.Registry;
 	import utils.Resources;
 	
 	/**
@@ -10,6 +11,8 @@ package plugins {
 	 * @author GFM
 	 */
 	public class LifeCounter extends FlxBasic {
+		
+		static private const reg:Registry = Registry.self;
 		
 		private var label:FlxText;
 		private var life:FlxSprite;
@@ -35,14 +38,14 @@ package plugins {
 			label.draw();
 			
 			life.x = 4;
-			life.frame = 0;
+			life.frame = 1;
 			var i:int = 0;
 			while (i < cur) {
 				life.draw();
 				life.x += 10;
 				i++;
 			}
-			life.frame = 1;
+			life.frame = 0;
 			while (i < max) {
 				life.draw();
 				life.x += 10;
@@ -62,7 +65,7 @@ package plugins {
 		public function wakeup(Max:int, Cur:int):void {
 			revive();
 			max = Max;
-			cur = Cur;
+			cur = reg.life;
 		}
 	}
 }

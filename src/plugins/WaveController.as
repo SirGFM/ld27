@@ -1,13 +1,14 @@
 package plugins {
 	
 	import basics.Spawner;
-	import objs.Boss;
+	import enemiesPkg.boss01.Boss01;
 	import org.flixel.FlxBasic;
 	import org.flixel.FlxG;
 	import org.flixel.FlxObject;
 	import org.flixel.FlxText;
 	import utils.Bar;
 	import utils.Registry;
+	import utils.Sounds;
 	import wavesPkg.Wave00;
 	import wavesPkg.Wave01;
 	import wavesPkg.Wave02;
@@ -18,6 +19,8 @@ package plugins {
 	 * @author GFM
 	 */
 	public class WaveController extends FlxBasic {
+		
+		static protected var reg:Registry = Registry.self;
 		
 		private var bar:Bar;
 		private var bossbar:Bar;
@@ -58,7 +61,9 @@ package plugins {
 			if (_timeUntilBoss > 0)
 				_timeUntilBoss -= step;
 			else {
-				(Registry.enemies.recycle(Boss) as FlxObject).reset(64, -64);
+				Sounds.playBossSong();
+				(reg.enemies.recycle(Boss01) as FlxObject).reset(64, -64);
+				//reg.garbagecollect(false);
 				label.text = "LAST\nWAVE";
 				active = false;
 			}
@@ -82,10 +87,10 @@ package plugins {
 				var w:Spawner;
 				var i:int = (FlxG.random() * 10) % 4;
 				switch(i) {
-					case 0: w = Registry.waves.recycle(Wave00) as Spawner; break;
-					case 1: w = Registry.waves.recycle(Wave01) as Spawner; break;
-					case 2: w = Registry.waves.recycle(Wave02) as Spawner; break;
-					case 3: w = Registry.waves.recycle(Wave03) as Spawner; break;
+					case 0: w = reg.waves.recycle(Wave00) as Spawner; break;
+					case 1: w = reg.waves.recycle(Wave01) as Spawner; break;
+					case 2: w = reg.waves.recycle(Wave02) as Spawner; break;
+					case 3: w = reg.waves.recycle(Wave03) as Spawner; break;
 				}
 				w.revive();
 				_timer += 10;

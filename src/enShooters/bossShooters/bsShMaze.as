@@ -25,7 +25,7 @@ package enShooters.bossShooters {
 			var b:Bullet;
 			var X:Number = parent.x;
 			var Y:Number = parent.y;
-			var v:Number = Registry.enBlSpeed;
+			var v:Number = reg.enBlSpeed;
 			
 			if (time > 1.2) {
 				X += 6;
@@ -44,10 +44,9 @@ package enShooters.bossShooters {
 		}
 		
 		private function create(X:Number, Y:Number, v:Number):void {
-			var b:Bullet = Registry.enBullets.recycle(Bullet) as Bullet;
+			var b:Bullet = reg.enBullets.recycle(Bullet) as Bullet;
 			b.reset(X, Y);
-			b.ID = Registry.ENBULLETID;
-			Resources.enBulletBucky(b);
+			b.enBucky();
 			b.velocity.x = 0;
 			b.velocity.y = v;
 		}

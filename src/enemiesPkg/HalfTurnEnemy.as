@@ -34,13 +34,13 @@ package enemiesPkg {
 		
 		override public function reset(X:Number, Y:Number):void {
 			super.reset(X, Y);
-			if (X > FlxG.width/2)
-				velocity.x = -Registry.enSpeed * 0.175;
+			if (X > CONST::WIDTH/2)
+				velocity.x = -reg.enSpeed * 0.175;
 			else
-				velocity.x = Registry.enSpeed * 0.175;
-			velocity.y = Registry.enSpeed * 1.8;
-			maxVelocity.y = Registry.enSpeed * 1.8;
-			acceleration.y = -Registry.enSpeed*1.2;
+				velocity.x = reg.enSpeed * 0.175;
+			velocity.y = reg.enSpeed * 1.8;
+			maxVelocity.y = reg.enSpeed * 1.8;
+			acceleration.y = -reg.enSpeed*1.2;
 			if (!shooter)
 				shooter = new EnShootgun();
 			shooter.revive();
