@@ -1,0 +1,16 @@
+What happened, Captain? Needing directions?
+All those fights against those aliens must have made you tired...
+It goes like this:
+	-You move with the 'arrow keys'
+	-Shoot by holding 'x'
+	-Activate your ship special ability by pressing 'c'
+That's the basic!
+Be careful not to shoot for a long time!
+This will overheat the systems and you won't be able to shoot for a while (10 seconds, I think)!
+The same goes to the special ability.
+After using it, you must wait 10 seconds to use it again.
+Rest assured! If by any chance you are hit, we will teleport port you to one of the reserve ship.
+We don't have many of those, so be careful...
+Also, be sure to catch anything dropped by those aliens, something might be usefull (like weapons or upgrades).
+Well, that's it.
+Let's depart whenever you are ready!

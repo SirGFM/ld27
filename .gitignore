@@ -1,0 +1,4 @@
+*.xcf
+*.wav
+obj/GFM_LD27Config.old
+GFM_LD27.lxml
